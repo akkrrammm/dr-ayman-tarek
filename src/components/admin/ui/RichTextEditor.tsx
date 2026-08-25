@@ -97,7 +97,7 @@ function EditorInstance({ value, onChange, dir, placeholder }: { value: JSONCont
       // it so the explicit LinkExtension below doesn't collide with it (was
       // logging "Duplicate extension names found: ['link']").
       StarterKit.configure({ link: false }),
-      LinkExtension.configure({ openOnClick: false, autolink: true }),
+      LinkExtension.configure({ openOnClick: false, autolink: true, protocols: ["http", "https", "mailto"] }),
       ImageExtension,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Placeholder.configure({ placeholder }),

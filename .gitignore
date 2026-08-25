@@ -8,9 +8,17 @@ out
 # Production build
 build
 
-# Env files
-.env*.local
+# Env files — every variant, including .env.production/.env.development
+# without a .local suffix (only .env and .env*.local were excluded before).
 .env
+.env.local
+.env.development
+.env.development.local
+.env.production
+.env.production.local
+.env.test
+.env.test.local
+!.env.example
 
 # Misc
 .DS_Store

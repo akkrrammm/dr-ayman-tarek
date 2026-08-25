@@ -1,17 +1,16 @@
 /**
  * Builds the Content-Security-Policy value for one request, given its nonce.
  *
- * Shipped as Content-Security-Policy-Report-Only (see middleware.ts) rather
- * than enforced — that's the documented rollout strategy (Next.js's own CSP
- * guide, and this project's web-quality-audit/best-practices skills all say
- * the same thing): a wrong directive here would silently break GA/GTM/Meta
- * Pixel/admin-dashboard Supabase calls with no visible error unless someone
- * is watching the browser console, and that can't be verified from this
- * environment (no interactive browser). Report-only mode has zero
- * functional risk — nothing is blocked, violations just become visible —
- * so it's the only version of this that's honestly "safe to automate".
- * Flip REPORT_ONLY to false once a real browser session confirms zero
- * violations across the public site and the admin dashboard.
+ * Shipped as an enforced Content-Security-Policy (see middleware.ts) — was
+ * Content-Security-Policy-Report-Only during development so a wrong
+ * directive would show up as a visible violation instead of silently
+ * breaking GA/GTM/Meta Pixel/Supabase calls. Flipped to enforced for the
+ * production launch audit after browsing the live public site (every page,
+ * the video/service/testimonial modals, the contact form, the mobile nav)
+ * with zero console CSP violations. If a legitimate external resource is
+ * ever added later (a new analytics vendor, a real Google Maps `<iframe>`,
+ * etc.), add its origin to the relevant directive below — don't just widen
+ * things to `*` or reach for `unsafe-inline`/`unsafe-eval`.
  *
  * Domain allowlist reasoning (see AnalyticsScripts.tsx, settings repo):
  * - script-src: 'nonce' + 'strict-dynamic' covers GTM/gtag/Meta Pixel's own

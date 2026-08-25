@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
 const newsletterSchema = z.object({
   email: z.string().trim().email(),
@@ -17,6 +18,11 @@ export async function subscribeToNewsletter(input: { email: string; language: st
   const parsed = newsletterSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: "invalidEmail" };
+  }
+
+  const ip = await getClientIp();
+  if (!rateLimit(`newsletter:${ip}`, 5, 60 * 60 * 1000)) {
+    return { ok: false, error: "generic" };
   }
 
   const supabase = await createClient();

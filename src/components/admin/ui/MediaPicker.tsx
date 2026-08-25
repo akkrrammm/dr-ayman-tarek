@@ -8,7 +8,7 @@ import { AdminButton } from "./Button";
 import { MediaGrid } from "@/components/admin/media/MediaGrid";
 import { TableSkeleton } from "./Skeleton";
 import { useMediaAssets, useUploadMedia, type MediaAsset } from "@/hooks/useMediaLibrary";
-import { getPublicMediaUrl } from "@/lib/supabase/storage";
+import { getPublicMediaUrl, validateMediaFile } from "@/lib/supabase/storage";
 
 /**
  * Reused everywhere a form needs to attach a media asset: page hero
@@ -87,6 +87,12 @@ export function MediaPickerDialog({
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    const validationError = validateMediaFile(file, accept);
+    if (validationError) {
+      toast.error(validationError);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
     try {
       const asset = await upload.mutateAsync(file);
       toast.success("Uploaded");

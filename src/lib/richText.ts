@@ -11,6 +11,7 @@ import StarterKit from "@tiptap/starter-kit";
 import LinkExtension from "@tiptap/extension-link";
 import ImageExtension from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
+import sanitizeHtml from "sanitize-html";
 
 const EXTENSIONS = [
   // StarterKit bundles its own Link extension as of Tiptap v3 — disable it
@@ -18,10 +19,39 @@ const EXTENSIONS = [
   // openOnClick/autolink options) doesn't collide with it (was logging
   // "Duplicate extension names found: ['link']" on every render).
   StarterKit.configure({ link: false }),
-  LinkExtension.configure({ openOnClick: false, autolink: true }),
+  LinkExtension.configure({ openOnClick: false, autolink: true, protocols: ["http", "https", "mailto"] }),
   ImageExtension,
   TextAlign.configure({ types: ["heading", "paragraph"] }),
 ];
+
+// Sanitized to exactly what the editor's toolbar (RichTextEditor.tsx) and
+// the EXTENSIONS set above can actually produce — defense-in-depth, not a
+// feature restriction: an admin account is trusted, but the stored value is
+// a JSON document, not the HTML itself, so this is the one place that
+// guarantees dangerouslySetInnerHTML (BlogPostDetail.tsx) only ever
+// receives markup from this fixed, known-safe tag/attribute set, even if
+// that JSON were ever edited outside the editor (a compromised admin
+// session, a direct DB edit, a future import feature).
+const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: [
+    "p", "br", "hr",
+    "h1", "h2", "h3", "h4", "h5", "h6",
+    "strong", "em", "s", "u", "code", "pre",
+    "ul", "ol", "li",
+    "blockquote",
+    "a", "img",
+  ],
+  allowedAttributes: {
+    a: ["href", "target", "rel"],
+    img: ["src", "alt", "title", "width", "height"],
+    "*": ["style"],
+  },
+  allowedStyles: {
+    "*": { "text-align": [/^(left|right|center|justify)$/] },
+  },
+  allowedSchemes: ["http", "https", "mailto"],
+  allowedSchemesByTag: { img: ["http", "https"] },
+};
 
 /** Same extension set as the admin BilingualRichText editor (see
  * RichTextEditor.tsx) — read-only server-side render of stored Tiptap JSON
@@ -30,7 +60,8 @@ const EXTENSIONS = [
 export function renderRichTextHtml(json: unknown): string {
   if (!json || typeof json !== "object" || Object.keys(json as object).length === 0) return "";
   try {
-    return generateHTML(json as Parameters<typeof generateHTML>[0], EXTENSIONS);
+    const html = generateHTML(json as Parameters<typeof generateHTML>[0], EXTENSIONS);
+    return sanitizeHtml(html, SANITIZE_OPTIONS);
   } catch (err) {
     // Surface this — a silent catch here is exactly what let the
     // @tiptap/core-vs-@tiptap/html mismatch above hide as "every post shows

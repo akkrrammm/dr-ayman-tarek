@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
 const contactMessageSchema = z.object({
   fullName: z.string().trim().min(1),
@@ -26,6 +27,11 @@ export async function submitContactMessage(input: {
   const parsed = contactMessageSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: "Please check the form fields and try again." };
+  }
+
+  const ip = await getClientIp();
+  if (!rateLimit(`contact:${ip}`, 5, 10 * 60 * 1000)) {
+    return { ok: false, error: "Too many submissions. Please try again in a few minutes." };
   }
 
   const supabase = await createClient();

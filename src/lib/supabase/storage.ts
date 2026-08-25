@@ -94,6 +94,25 @@ export function validateVideoFile(file: File): string | null {
   return null;
 }
 
+// uploadMediaAsset() never validated its input at all — any file type/size
+// went straight to Storage, relying solely on the RLS admin gate. That's a
+// legitimate boundary against outside attackers, but not against a stray
+// multi-GB file or an accidentally-wrong file type reaching a picker that
+// specifically asked for images. `accept` mirrors <MediaPickerField>'s own
+// "image" | "any" prop so this enforces exactly what each call site already
+// promises the admin, no stricter.
+export const MAX_MEDIA_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
+
+export function validateMediaFile(file: File, accept: "image" | "any" = "any"): string | null {
+  if (accept === "image" && !file.type.startsWith("image/")) {
+    return "Please choose an image file.";
+  }
+  if (file.size > MAX_MEDIA_FILE_SIZE_BYTES) {
+    return `File is too large — max ${MAX_MEDIA_FILE_SIZE_BYTES / (1024 * 1024)}MB, this file is ${Math.round(file.size / (1024 * 1024))}MB.`;
+  }
+  return null;
+}
+
 /**
  * Same wire format as the supabase-js `storage.upload()` call inside
  * uploadMediaAsset() above (multipart POST to /storage/v1/object/{bucket}/{path}
