@@ -12,6 +12,13 @@
  * etc.), add its origin to the relevant directive below — don't just widen
  * things to `*` or reach for `unsafe-inline`/`unsafe-eval`.
  *
+ * The one exception is development mode itself: `next dev`'s hot-reload
+ * client uses eval() and a plain ws:// connection, so `buildCspHeader()`
+ * adds `'unsafe-eval'` and localhost connect-src entries ONLY when
+ * `NODE_ENV === "development"` — never true for the `next build`/`next
+ * start` pair that actually deploys, so production stays exactly as strict
+ * as verified.
+ *
  * Domain allowlist reasoning (see AnalyticsScripts.tsx, settings repo):
  * - script-src: 'nonce' + 'strict-dynamic' covers GTM/gtag/Meta Pixel's own
  *   inline bootstrap AND whatever scripts they dynamically inject after —
@@ -42,13 +49,31 @@ function supabaseOrigin(): string | null {
 
 export function buildCspHeader(nonce: string): string {
   const supabase = supabaseOrigin();
-  const connectSrc = ["'self'", supabase, "https://www.google-analytics.com", "https://analytics.google.com", "https://region1.google-analytics.com", "https://www.facebook.com"]
+  // `next dev`'s webpack HMR wraps modules in eval() and talks to the
+  // browser over a plain-http/ws websocket — both are genuine requirements
+  // of the dev tooling itself, not app code, and only exist when NODE_ENV
+  // is "development" (never true for `next build`/`next start`, which is
+  // what actually ships to Hostinger). Without this, dev mode's own
+  // hot-reload machinery gets blocked by its own CSP — a real regression
+  // this fixes, not a loosening of the production policy below.
+  const isDev = process.env.NODE_ENV === "development";
+  const connectSrc = [
+    "'self'",
+    supabase,
+    "https://www.google-analytics.com",
+    "https://analytics.google.com",
+    "https://region1.google-analytics.com",
+    "https://www.facebook.com",
+    isDev && "ws://localhost:*",
+    isDev && "http://localhost:*",
+  ]
     .filter(Boolean)
     .join(" ");
+  const scriptSrc = `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`;
 
   const directives = [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    scriptSrc,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src 'self' data: https:`,
     `font-src 'self' https://fonts.gstatic.com`,
