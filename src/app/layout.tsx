@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { getSiteSettings } from "@/server/repositories/settings";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildOrganizationSchema, buildWebSiteSchema } from "@/lib/seo/schema";
+import { getSiteUrl } from "@/lib/seo/site";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -30,7 +31,7 @@ const cairo = Cairo({
 export async function generateMetadata(): Promise<Metadata> {
   const [settings, requestHeaders] = await Promise.all([getSiteSettings(), headers()]);
   const lang = (requestHeaders.get("x-pathname") || "/").startsWith("/ar") ? "ar" : "en";
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.dr-aymantarek.com").replace(/\/$/, "");
+  const siteUrl = getSiteUrl();
 
   const defaultTitle =
     (lang === "ar" ? settings.defaultTitleAr : settings.defaultTitleEn) ||

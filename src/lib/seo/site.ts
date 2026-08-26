@@ -2,7 +2,7 @@
  * OG url, hreflang alternate, sitemap entry, and JSON-LD `url` field derives
  * from this so there is never more than one place to update it. */
 export function getSiteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL || "https://www.dr-aymantarek.com").replace(/\/$/, "");
+  return (process.env.NEXT_PUBLIC_SITE_URL || "https://dr-aymantarek.com").replace(/\/$/, "");
 }
 
 /** Joins a root-relative path onto the site origin. */
