@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope, Cairo } from "next/font/google";
 import { MotionConfig } from "framer-motion";
-import { Toaster } from "sonner";
 import { headers } from "next/headers";
 import { getSiteSettings } from "@/server/repositories/settings";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -116,10 +115,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             automatically honor the OS-level prefers-reduced-motion setting
             (swaps transform/scale animations for instant or opacity-only) —
             one place instead of gating each animation individually. */}
-        <MotionConfig reducedMotion="user">
-          {children}
-          <Toaster theme="dark" position="top-center" richColors />
-        </MotionConfig>
+        <MotionConfig reducedMotion="user">{children}</MotionConfig>
       </body>
     </html>
   );

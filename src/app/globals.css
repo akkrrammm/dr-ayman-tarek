@@ -149,13 +149,19 @@ body {
     transition:
       filter 300ms ease,
       transform 300ms ease;
-    will-change: transform, filter;
   }
+  /* will-change only while actually hovered — this class renders on every
+     icon badge/play button/social icon sitewide (often dozens per page), so
+     promoting all of them to their own GPU layer permanently (the previous
+     always-on will-change) wastes compositor memory for elements that are
+     static almost all the time. Scoping it to :hover keeps the exact same
+     transition, promoted only for the brief moment it's animating. */
   .icon-neon-trigger:hover .icon-neon,
   .icon-neon:hover {
     transform: translateZ(0) scale(1.08);
     filter: drop-shadow(0 0 12px rgba(192, 38, 255, 0.6)) drop-shadow(0 0 24px rgba(192, 38, 255, 0.45))
       drop-shadow(0 0 40px rgba(192, 38, 255, 0.3));
+    will-change: transform, filter;
   }
 
   /* Glassmorphic neon container that wraps an .icon-neon glyph.
@@ -171,8 +177,9 @@ body {
       transform 300ms ease,
       box-shadow 300ms ease,
       border-color 300ms ease;
-    will-change: transform, box-shadow;
   }
+  /* Same reasoning as .icon-neon above: will-change scoped to :hover only,
+     not left on permanently for every badge on the page. */
   .icon-badge-neon-trigger:hover .icon-badge-neon,
   .icon-badge-neon:hover {
     transform: translateY(-2px) translateZ(0);
@@ -181,6 +188,7 @@ body {
       0 0 12px rgba(192, 38, 255, 0.6),
       0 0 24px rgba(192, 38, 255, 0.45),
       0 0 40px rgba(192, 38, 255, 0.3);
+    will-change: transform, box-shadow;
   }
 }
 

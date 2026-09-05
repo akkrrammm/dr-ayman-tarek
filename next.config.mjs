@@ -36,10 +36,9 @@ const nextConfig = {
   },
   async headers() {
     // CSP itself is NOT set here — it needs a fresh nonce per request, so
-    // it's generated in middleware.ts (see src/lib/csp.ts) and shipped as
-    // Content-Security-Policy-Report-Only rather than enforced; these are
-    // the static headers that don't need per-request data. Vercel does not
-    // add HSTS automatically — it's the app's responsibility to set it.
+    // it's generated and enforced in middleware.ts (see src/lib/csp.ts);
+    // these are the static headers that don't need per-request data. Vercel
+    // does not add HSTS automatically — it's the app's responsibility to set it.
     return [
       {
         source: "/:path*",

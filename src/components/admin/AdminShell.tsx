@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { Toaster } from "sonner";
 import { ChevronDown, Menu, X, LogOut, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -154,6 +155,7 @@ export function AdminShell({ profile, children }: { profile: AdminProfile; child
   return (
     <QueryProvider>
     <ConfirmProvider>
+    <Toaster theme="dark" position="top-center" richColors />
     <div dir="ltr" className="min-h-screen bg-background text-on-background">
       <div
         aria-hidden
