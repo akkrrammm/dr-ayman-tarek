@@ -1,5 +1,7 @@
 # Dr. Ayman Tarek — Clinic Website
 
+[![Dr. Ayman Tarek website](https://raw.githubusercontent.com/akkrrammm/akkrrammm/main/assets/ayman-tarek.jpg)](https://dr-aymantarek.com/)
+
 > Official bilingual (Arabic / English) website for Dr. Ayman Tarek, with animated UI and a complete admin dashboard.
 
 🔗 **Live site:** [dr-aymantarek.com](https://dr-aymantarek.com/)
